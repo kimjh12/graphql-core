@@ -6,6 +6,7 @@ from contextlib import suppress
 from typing import TYPE_CHECKING, Collection
 
 from ..pyutils import inspect
+from ..language.source import is_source
 from .graphql_error import GraphQLError
 
 if TYPE_CHECKING:
@@ -39,7 +40,9 @@ def located_error(
     except AttributeError:
         message = str(original_error)
     try:
-        source = original_error.source  # type: ignore
+        source = original_error.source
+        if not is_source(source):
+            source = None
     except AttributeError:
         source = None
     try:

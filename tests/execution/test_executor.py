@@ -391,6 +391,7 @@ def describe_execute_handles_basic_execution_tasks():
               asyncRawError
               asyncReturnError
               asyncReturnErrorWithExtensions
+              asyncRawErrorWithSource
             }
             """
         )
@@ -410,9 +411,15 @@ def describe_execute_handles_basic_execution_tasks():
                     "asyncRawError": GraphQLField(GraphQLString),
                     "asyncReturnError": GraphQLField(GraphQLString),
                     "asyncReturnErrorWithExtensions": GraphQLField(GraphQLString),
+                    "asyncRawErrorWithSource": GraphQLField(GraphQLString),
                 },
             )
         )
+
+        class CustomException(Exception):
+            def __init__(self, message, source):
+                super().__init__(message)
+                self.source = source
 
         # noinspection PyPep8Naming,PyMethodMayBeStatic
         class Data:
@@ -448,6 +455,9 @@ def describe_execute_handles_basic_execution_tasks():
             async def asyncReturnError(self, _info):
                 return GraphQLError("Error getting asyncReturnError")
 
+            async def asyncRawErrorWithSource(self, _info):
+                raise CustomException("Error getting asyncRawErrorWithSource", source="source")
+
             async def asyncReturnErrorWithExtensions(self, _info):
                 return GraphQLError(
                     "Error getting asyncReturnErrorWithExtensions",
@@ -470,6 +480,7 @@ def describe_execute_handles_basic_execution_tasks():
                 "asyncRawError": None,
                 "asyncReturnError": None,
                 "asyncReturnErrorWithExtensions": None,
+                "asyncRawErrorWithSource": None,
             },
             [
                 {
@@ -517,6 +528,11 @@ def describe_execute_handles_basic_execution_tasks():
                     "locations": [(12, 15)],
                     "path": ["asyncReturnErrorWithExtensions"],
                     "extensions": {"foo": "bar"},
+                },
+                {
+                    "message": "Error getting asyncRawErrorWithSource",
+                    "locations": [(13, 15)],
+                    "path": ["asyncRawErrorWithSource"],
                 },
             ],
         )
